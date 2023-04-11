@@ -1,0 +1,50 @@
+#include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+using namespace std;
+
+int main() {
+    // create a socket
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        cerr << "Error creating socket" << endl;
+        return 1;
+    }
+
+    // define the server address
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1"); // IP address of the server
+    serverAddress.sin_port = htons(8080); // port number
+
+    // connect to the server
+    if (connect(sock, (sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+        cerr << "Error connecting to server" << endl;
+        return 1;
+    }
+
+    // send a message to the server
+    string message = "Hello, server!";
+    if (send(sock, message.c_str(), message.length(), 0) < 0) {
+        cerr << "Error sending message" << endl;
+        return 1;
+    }
+
+    // receive a message from the server
+    char buffer[1024] = {0};
+    if (recv(sock, buffer, sizeof(buffer), 0) < 0) {
+        cerr << "Error receiving message" << endl;
+        return 1;
+    }
+
+    // print the message received from the server
+    cout << "Message received from server: " << buffer << endl;
+
+    // close the socket
+    close(sock);
+
+    return 0;
+}
